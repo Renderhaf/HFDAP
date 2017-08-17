@@ -1,0 +1,95 @@
+<html>
+<title>Tone</title>
+<body align = "center">
+<input type="text" id="input"></br>
+<input type="button" id="send" value="Transmit" onclick="Send()">
+  <script>
+    var context = new (window.AudioContext || window.webkitAudioContext)();
+
+    function sleep(delay) {
+        var start = new Date().getTime();
+        while (new Date().getTime() < start + delay);
+      }
+
+    function convert(inp) {
+      var output = []
+      var input = inp
+
+      for (var i = 0; i < input.length; i++) {
+          output.push(input[i].charCodeAt(0).toString(2))
+          // output.push(input[i].toString(2))
+        }
+
+      for (i=0;i<output.length;i++){
+        var left = 8 - output[i].length
+        var zeros = ""
+        for (g=0;g<left;g++){
+          zeros = zeros + "0"
+        }
+        output[i] = zeros + output[i]
+      }
+      return output
+    }
+
+    function bintosting(bin){
+      var out = ""
+
+      for (i=0;i<bin.length;i++){
+        var letterchar = parseInt(bin[i],2).toString(10)
+        out += String.fromCharCode(letterchar)
+      }
+
+      return out
+    }
+    var Tone = function(freq,dur){
+      var osc = context.createOscillator(); // instantiate an oscillator
+      osc.type = 'sine'; // this is the default - also square, sawtooth, triangle
+      osc.frequency.value = freq; // Hz
+      osc.connect(context.destination); // connect it to the destination
+      osc.start(); // start the oscillator
+
+      sleep(dur)
+
+      osc.stop();
+    }
+
+    var Send = function(){
+
+      var input = document.getElementById("input").value
+      var bin = convert(input)
+      var time = 100
+      console.log(bin)
+      console.log(bintosting(bin))
+
+      alert("Transmiting!")
+
+      Tone(19500, time * 8)
+
+      for (i=0;i<bin.length;i++){
+        var current = bin[i]
+        for (g=0;g<current.length;g++){
+          var bit = current[g]
+
+          if (bit == 1){
+
+            Tone(20000,time * 5)
+            sleep(time)
+
+          } else{
+
+            sleep(time * 6)
+
+          }
+        }
+      }
+    }
+
+    // for (i=0;i<5;i++){
+    //   console.log(i)
+    //   Tone(20100,1000)
+    //   sleep(500)
+    // }
+
+  </script>
+</body>
+</html>

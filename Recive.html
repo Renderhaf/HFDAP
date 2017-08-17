@@ -1,0 +1,113 @@
+<html>
+<title>Recive</title>
+<body align = "center">
+  <input type="text" id="output"></br>
+  <!-- <input type="button" value="Recive" onclick="Recive()"> -->
+  </br>
+  <h4 id="stat" style= "color:gray">Ready</h4>
+
+  <script src="p5.js"></script>
+  <script src="p5.sound.js"></script>
+  <script>
+    var mic, fft;
+
+    function setup() {
+       mic = new p5.AudioIn();
+       mic.start();
+
+       fft = new p5.FFT(0,2048);
+       fft.setInput(mic);
+
+       var output = document.getElementById("output")
+       var stat = document.getElementById("stat")
+
+       bin = [];
+       current = ""
+       start = false
+       blankstreak = 0
+
+       onetime = 0
+       zerotime = 0
+       starttime = 0
+
+    }
+
+    function bintosting(bin){
+      var out = ""
+
+      for (i=0;i<bin.length;i++){
+        var letterchar = parseInt(bin[i],2).toString(10)
+        out += String.fromCharCode(letterchar)
+      }
+
+      return out
+    }
+
+    function draw() {
+      var spectrum = fft.analyze();
+
+      if (fft.getEnergy(19500) > 90){
+        starttime ++
+        console.log("Found 19500", starttime)
+      }
+      if (starttime > 40){
+        starttime = 0
+        stat.innerHTML = "Listening"
+        start = true
+      }
+
+      if (start){
+
+        if (fft.getEnergy(20000) > 80){
+          onetime ++
+        } else {
+          zerotime ++
+        }
+
+        if (onetime > 30){
+          current = current + "1"
+          onetime = 0
+          zerotime = 0
+        }
+
+        if (zerotime > 33){
+          current = current + "0"
+          onetime = 0
+          zerotime = 0
+        }
+
+        if (current.length == 8){
+          bin.push(current)
+          if (current == "00000000"){
+            blankstreak ++
+          } else {
+            blankstreak = 0
+          }
+
+          if (blankstreak == 2){
+            start = false
+
+            for (i=0;i<2;i++){
+              bin.pop()
+            }
+
+            console.clear()
+            console.log(bin)
+
+            output.value = bintosting(bin)
+            stat.innerHTML = "Ready"
+
+          }
+          current = ""
+        }
+
+
+      console.log(bin, current, onetime, fft.getEnergy(20000))
+
+      }
+
+       console.log(start, )
+    }
+  </script>
+</body>
+</html>
